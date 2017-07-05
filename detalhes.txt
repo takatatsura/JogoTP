@@ -1,0 +1,7 @@
+Mecanica
+ - Andar com as setas
+ - Mirar e atirar com o mouse (caçador)
+
+Caçador
+ - Arma de baixa cadencia
+ - 
