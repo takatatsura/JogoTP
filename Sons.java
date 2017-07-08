@@ -1,7 +1,15 @@
+import java.awt.Color;
+
 class Sons extends Posicao {
   private int raio;
-  Sons(int x, int y) {
+  private int r;
+  private int g;
+  private int b;
+  Sons(int x, int y, int r, int g, int b) {
     raio = 0;
+    this.r = r;
+    this.g = g;
+    this.b = b;
     setX(x);
     setY(y);
   }
@@ -14,4 +22,7 @@ class Sons extends Posicao {
     return raio;
   }
 
+  public Color getColor() {
+    return new Color(r - raio * r / 150, g - raio * g / 150, b - raio * b / 150);
+  }
 }
