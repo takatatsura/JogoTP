@@ -11,7 +11,9 @@ class Principal extends JFrame {
   Desenho d;
   Cacador c;
   Presa p;
-  Posicao guizo;
+  Guizos gu;
+  Color bg, ch, gz;
+  Random r;
   Queue<Sons> som = new ConcurrentLinkedQueue<Sons>();
 
   Principal() {
@@ -20,9 +22,15 @@ class Principal extends JFrame {
     wwidth = 800;
     wheight = 500;
     passo = 0;
+    r = new Random();
     d = new Desenho();
     c = new Cacador(0, 0);
     p = new Presa(wwidth, wheight);
+    gu = new Guizos(r.nextInt(wwidth), r.nextInt(wheight)); //ramdomizar
+    System.out.println("x: " + gu.getX() + "\ny: " + gu.getY());
+    bg = new Color(0, 0, 0);
+    ch = new Color(255, 255, 255);
+    gz = new Color(255, 255, 0);
     add(d);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     new ThreadDraw().start();
@@ -43,9 +51,9 @@ class Principal extends JFrame {
 
     public void paintComponent(Graphics g) {
       super.paintComponent(g);
-      g.setColor(new Color(0, 0, 0));
+      g.setColor(bg);
       g.fillRect(0, 0, wwidth, wheight);
-      g.setColor(new Color(255, 255, 255));
+      g.setColor(ch);
       if(classe == 1) {
         g.fillOval(c.getX() - 5, c.getY() - 5, 10, 10);
       } else {
@@ -55,11 +63,12 @@ class Principal extends JFrame {
       while(it.hasNext()) {
         s = it.next();
         s.setRaio(s.getRaio() + 1);
-        g.setColor(new Color(0, 0, 255 - s.getRaio() * 255 / 100));
+        g.setColor(new Color(255 - s.getRaio() * 255 / 100, 255 - s.getRaio() * 255 / 100, 255 - s.getRaio() * 255 / 100));
         g.drawOval(s.getX() - s.getRaio() / 2, s.getY() - s.getRaio() / 2, s.getRaio(), s.getRaio());
-        if(s.getRaio() >= 90) it.remove();
+        if(s.getRaio() >= 100) it.remove();
       }
-      System.out.println(som.size() + "\n");
+      g.setColor(gz);
+      g.fillOval(gu.getX() - 5, gu.getY() - 5, 10, 10);
     }
   }
 
@@ -68,7 +77,6 @@ class Principal extends JFrame {
     public void keyPressed(KeyEvent e) {
       movx = 0;
       movy = 0;
-      //Colocar os ifs pra não ultrapassar as bordas
       switch(e.getKeyCode()) {
         case KeyEvent.VK_LEFT:
             movx = -10;
@@ -88,10 +96,14 @@ class Principal extends JFrame {
           break;
       }
 
-      if(classe == 1) {
+      if(classe == 1 
+        && c.getX() + movx <= wwidth && c.getX() + movx >= 0
+        && c.getY() + movy <= wheight && c.getY() + movy >= 0) {
         c.setX(c.getX() + movx);
         c.setY(c.getY() + movy);
-      } else {
+      } else if(classe == 2
+        && p.getX() + movx <= wwidth && p.getX() + movx >= 0
+        && p.getY() + movy <= wheight && p.getY() + movy >= 0) {
         p.setX(p.getX() + movx);
         p.setY(p.getY() + movy);
       }
@@ -112,7 +124,7 @@ class Principal extends JFrame {
     public void run() {
       while(true) {
         try {
-          Thread.sleep(15);
+          Thread.sleep(1000/60);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
