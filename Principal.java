@@ -10,6 +10,8 @@ class Principal extends JFrame {
   int wwidth, wheight;
   int passo;
   int tparado;
+  int projetil;
+  Double projx, projy;
   Desenho d;
   //to pensando em ao invés de fazer uma classe Cacador e outra classe Presa, faz apenas uma classe Posicao
   //nao vai precisar verificar a classe toda vez que mexer com a posição do jogador atual
@@ -25,17 +27,18 @@ class Principal extends JFrame {
 
   Principal() {
     super("Paranoia");
-    classe = 2;
+    classe = 1;
     wwidth = 800;
     wheight = 500;
     passo = 0;
     tparado = 180;
+    projetil = 0;
     r = new Random();
     d = new Desenho();
     c = new Cacador(0, 0);
     p = new Presa(wwidth, wheight);
     if(classe == 1) {
-      addMouseListener(new ListenerShot());
+      d.addMouseListener(new ListenerShot());
     } else {
       gu = new Guizos(r.nextInt(wwidth / 10) * 10, r.nextInt(wheight / 10) * 10);
       gz = new Color(255, 255, 0);
@@ -82,6 +85,11 @@ class Principal extends JFrame {
         g.setColor(gz);
         g.drawOval(gu.getX() - 5, gu.getY() - 5, 10, 10);
       }
+      if(projetil > 0) {
+        projetil--;
+        g.setColor(new Color(projetil * 255 / 50, 0, 0));
+        g.drawLine(c.getX(), c.getY(), (int)Math.floor(projx), (int)Math.floor(projy));
+      }
     }
   }
 
@@ -103,6 +111,10 @@ class Principal extends JFrame {
         case KeyEvent.VK_DOWN:
           movy = 10;
           break;
+      }
+      if(projetil > 0) {
+        movx = 0;
+        movy = 0;
       }
 
       if(classe == 1
@@ -138,13 +150,30 @@ class Principal extends JFrame {
   }
 
   class ListenerShot extends MouseAdapter {
+
     public void mouseClicked(MouseEvent e) {
-      Point tiro = MouseInfo.getPointerInfo().getLocation();
-      System.out.println("\nMouse:\nx = " + tiro.getX() + "\ny = " + tiro.getY());
+      Point tiro = e.getPoint();
+      if(tiro.getX() - c.getX() != 0 && projetil == 0) {
+        Double m = (tiro.getY() - c.getY()) / (tiro.getX() - c.getX());
+        //y = mx + b; b = y - mx;
+        //x = (b - y) / m;
+        Double b = c.getY() - m * c.getX();
+        if(tiro.getX() < c.getX()) {
+          projx = 0.0;
+          projy = b;
+        } else if (tiro.getX() > c.getX()) {
+          projx = (double)wwidth;
+          projy = m * wwidth + b;
+        } else if (tiro.getY() < c.getY()) {
+          projx = (-b) / m;
+          projy = 0.0;
+        } else if (tiro.getY() > c.getY()) {
+          projx = (wheight - b) / m;
+          projy = (double)wheight;
+        }
+        projetil = 50;
+      }
     }
-    //   d.paintComponent(g);
-    //   g.setColor(new Color(255, 0, 0));
-    //   g.drawLine(c.getX(), c.getY(), (int)ponto.getX(), (int)ponto.getY());
   }
 
   class ThreadDraw extends Thread {
