@@ -87,7 +87,7 @@ class Principal extends JFrame {
       }
       if(projetil > 0) {
         projetil--;
-        g.setColor(new Color(projetil * 255 / 50, 0, 0));
+        g.setColor(new Color(projetil * 255 / 180, 0, 0));
         g.drawLine(c.getX(), c.getY(), (int)Math.floor(projx), (int)Math.floor(projy));
       }
     }
@@ -112,14 +112,11 @@ class Principal extends JFrame {
           movy = 10;
           break;
       }
-      if(projetil > 0) {
-        movx = 0;
-        movy = 0;
-      }
 
       if(classe == 1
         && c.getX() + movx <= wwidth && c.getX() + movx >= 0
-        && c.getY() + movy <= wheight && c.getY() + movy >= 0) {
+        && c.getY() + movy <= wheight && c.getY() + movy >= 0
+        && projetil == 0) {
         passo++;
         tparado = 180;
         c.setX(c.getX() + movx);
@@ -138,7 +135,7 @@ class Principal extends JFrame {
         }
       }
 
-      if(passo == 10) {
+      if(passo == 30) {
         if(classe == 1) {
           som.add(new Sons(c.getX(), c.getY(), 255, 255, 255));
         } else {
@@ -171,7 +168,7 @@ class Principal extends JFrame {
           projx = (wheight - b) / m;
           projy = (double)wheight;
         }
-        projetil = 50;
+        projetil = 180;
       }
     }
   }
@@ -185,7 +182,7 @@ class Principal extends JFrame {
           e.printStackTrace();
         }
         tparado--;
-        if(tparado <= 0 && tparado * (-1) % 20 == 0) {
+        if(tparado <= 0 && tparado * (-1) % 40 == 0) {
           if(classe == 1) {
             som.add(new Sons(c.getX(), c.getY(), 255, 0, 0));
           } else {
