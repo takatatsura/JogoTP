@@ -6,12 +6,11 @@ class Sons extends Posicao {
   private int g;
   private int b;
   Sons(int x, int y, int r, int g, int b) {
-    raio = 0;
+    super(x, y);
+    this.raio = 0;
     this.r = r;
     this.g = g;
     this.b = b;
-    setX(x);
-    setY(y);
   }
 
   public void setRaio(int raio) {

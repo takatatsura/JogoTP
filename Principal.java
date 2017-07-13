@@ -2,7 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
-import java.util.concurrent.*;
+//import java.util.concurrent.*;
 
 class Principal extends JFrame {
   int classe; //1 - Cacador; 2 - Presa;
@@ -16,14 +16,16 @@ class Principal extends JFrame {
   //to pensando em ao invés de fazer uma classe Cacador e outra classe Presa, faz apenas uma classe Posicao
   //nao vai precisar verificar a classe toda vez que mexer com a posição do jogador atual
   //já que o usuário só vai ver a ele mesmo
-  Cacador c;
-  Presa p;
+  Posicao jogador;
+  //Cacador c;
+  //Presa p;
   Guizos gu;
   Color bg, ch, gz;
   Random r;
   //talvez agora dê pra usar a queue normal
   //antes tava dando ruim pq executando direto de dentro da thread
-  Queue<Sons> som = new ConcurrentLinkedQueue<Sons>();
+  //Queue<Sons> som = new ConcurrentLinkedQueue<Sons>();
+  Queue<Sons> som = new LinkedList<Sons>();
 
   Principal() {
     super("Paranoia");
@@ -35,8 +37,11 @@ class Principal extends JFrame {
     projetil = 0;
     r = new Random();
     d = new Desenho();
-    c = new Cacador(0, 0);
-    p = new Presa(wwidth, wheight);
+    if(classe == 1) {
+      jogador = new Posicao(0, 0);
+    } else {
+      jogador = new Posicao(wwidth, wheight);
+    }
     if(classe == 1) {
       d.addMouseListener(new ListenerShot());
     } else {
@@ -65,14 +70,7 @@ class Principal extends JFrame {
       super.paintComponent(g);
       g.setColor(bg);
       g.fillRect(0, 0, wwidth, wheight);
-      g.setColor(ch);
-      if(classe == 1) {
-        g.fillOval(c.getX() - 5, c.getY() - 5, 10, 10);
-      } else {
-        g.fillOval(p.getX() - 5, p.getY() - 5, 10, 10);
-      }
 
-      //Tentar navegar elemento a elemento ao inves de usar iterator.
       Iterator<Sons> it = som.iterator();
       while(it.hasNext()) {
         s = it.next();
@@ -81,15 +79,34 @@ class Principal extends JFrame {
         g.drawOval(s.getX() - s.getRaio() / 2, s.getY() - s.getRaio() / 2, s.getRaio(), s.getRaio());
         if(s.getRaio() >= 150) it.remove();
       }
+
+
       if(classe == 2) {
         g.setColor(gz);
         g.drawOval(gu.getX() - 5, gu.getY() - 5, 10, 10);
       }
       if(projetil > 0) {
         projetil--;
-        g.setColor(new Color(projetil * 255 / 180, 0, 0));
-        g.drawLine(c.getX(), c.getY(), (int)Math.floor(projx), (int)Math.floor(projy));
+        if(projetil > 120) {
+          g.setColor(new Color((projetil - 120) * 255 / 60, 0, 0));
+          g.drawLine(jogador.getX(), jogador.getY(), (int)Math.floor(projx), (int)Math.floor(projy));
+        }
+        if(projetil > 30) {
+          g.setColor(new Color(255, 255, 255));
+        } else {
+          g.setColor(new Color(projetil * 255 / 30, projetil * 255 / 30, projetil * 255 / 30));
+        }
+        if(jogador.getX() > wwidth / 2) {
+          g.drawRect(jogador.getX() - 20, jogador.getY() - 5, 10, 10);
+          g.fillRect(jogador.getX() - 20, jogador.getY() - 5, 10 - projetil * 10 / 180, 10);
+        } else {
+          g.drawRect(jogador.getX() + 10, jogador.getY() - 5, 10, 10);
+          g.fillRect(jogador.getX() + 10, jogador.getY() - 5, 10 - projetil * 10 / 180, 10);
+        }
       }
+
+      g.setColor(ch);
+      g.fillOval(jogador.getX() - 5, jogador.getY() - 5, 10, 10);
     }
   }
 
@@ -113,34 +130,22 @@ class Principal extends JFrame {
           break;
       }
 
-      if(classe == 1
-        && c.getX() + movx <= wwidth && c.getX() + movx >= 0
-        && c.getY() + movy <= wheight && c.getY() + movy >= 0
-        && projetil == 0) {
-        passo++;
-        tparado = 180;
-        c.setX(c.getX() + movx);
-        c.setY(c.getY() + movy);
-      } else if(classe == 2
-        && p.getX() + movx <= wwidth && p.getX() + movx >= 0
-        && p.getY() + movy <= wheight && p.getY() + movy >= 0) {
-        passo++;
-        tparado = 180;
-        p.setX(p.getX() + movx);
-        p.setY(p.getY() + movy);
-        if(p.getX() == gu.getX() && p.getY() == gu.getY()) {
-          //ponto++
-          som.add(new Sons(gu.getX(), gu.getY(), 255, 255, 0));
-          gu = new Guizos(r.nextInt(wwidth / 10) * 10, r.nextInt(wheight / 10) * 10);
+      if(jogador.getX() + movx <= wwidth && jogador.getX() + movx >= 0
+        && jogador.getY() + movy <= wheight && jogador.getY() + movy >= 0
+        && (classe == 1 && projetil == 0 || classe == 2)) {
+          passo++;
+          tparado = 180;
+          jogador.setX(jogador.getX() + movx);
+          jogador.setY(jogador.getY() + movy);
+          if(classe == 2 && jogador.getX() == gu.getX() && jogador.getY() == gu.getY()) {
+            //ponto++
+            som.add(new Sons(gu.getX(), gu.getY(), 255, 255, 0));
+            gu = new Guizos(r.nextInt(wwidth / 10) * 10, r.nextInt(wheight / 10) * 10);
+          }
         }
-      }
 
       if(passo == 30) {
-        if(classe == 1) {
-          som.add(new Sons(c.getX(), c.getY(), 255, 255, 255));
-        } else {
-          som.add(new Sons(p.getX(), p.getY(), 255, 255, 255));
-        }
+        som.add(new Sons(jogador.getX(), jogador.getY(), 255, 255, 255));
         passo = 0;
       }
     }
@@ -148,23 +153,23 @@ class Principal extends JFrame {
 
   class ListenerShot extends MouseAdapter {
 
-    public void mouseClicked(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {
       Point tiro = e.getPoint();
-      if(tiro.getX() - c.getX() != 0 && projetil == 0) {
-        Double m = (tiro.getY() - c.getY()) / (tiro.getX() - c.getX());
+      if(tiro.getX() - jogador.getX() != 0 && projetil == 0) {
+        Double m = (tiro.getY() - jogador.getY()) / (tiro.getX() - jogador.getX());
         //y = mx + b; b = y - mx;
         //x = (b - y) / m;
-        Double b = c.getY() - m * c.getX();
-        if(tiro.getX() < c.getX()) {
+        Double b = jogador.getY() - m * jogador.getX();
+        if(tiro.getX() < jogador.getX()) {
           projx = 0.0;
           projy = b;
-        } else if (tiro.getX() > c.getX()) {
+        } else if (tiro.getX() > jogador.getX()) {
           projx = (double)wwidth;
           projy = m * wwidth + b;
-        } else if (tiro.getY() < c.getY()) {
+        } else if (tiro.getY() < jogador.getY()) {
           projx = (-b) / m;
           projy = 0.0;
-        } else if (tiro.getY() > c.getY()) {
+        } else if (tiro.getY() > jogador.getY()) {
           projx = (wheight - b) / m;
           projy = (double)wheight;
         }
@@ -183,11 +188,7 @@ class Principal extends JFrame {
         }
         tparado--;
         if(tparado <= 0 && tparado * (-1) % 40 == 0) {
-          if(classe == 1) {
-            som.add(new Sons(c.getX(), c.getY(), 255, 0, 0));
-          } else {
-            som.add(new Sons(p.getX(), p.getY(), 255, 0, 0));
-          }
+          som.add(new Sons(jogador.getX(), jogador.getY(), 255, 0, 0));
         }
         repaint();
       }

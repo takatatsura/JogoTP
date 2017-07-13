@@ -2,9 +2,8 @@ class Guizos extends Posicao {
 	private boolean existe;
 
 	Guizos(int x, int y) {
+		super(x, y);
 		existe = true;
-		setX(x);
-		setY(y);
 	}
 
 	public void setExiste(boolean existe) {
